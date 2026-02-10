@@ -14,7 +14,7 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: SessionDep
 ) -> Token:
-    user = db.exec(select(RegularUser).where(User.username == form_data.username)).one_or_none()
+    user = db.exec(select(RegularUser).where(RegularUser.username == form_data.username)).one_or_none()
     if not user or not verify_password(plaintext_password=form_data.password, encrypted_password=user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -22,7 +22,7 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    access_token = create_access_token(data={"sub": user.id, "role": user.role},)
+    access_token = create_access_token(data={"sub": user.username, "role": user.role},)
 
     return Token(access_token=access_token, token_type="bearer")
 
