@@ -60,3 +60,4 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db:Ses
     return user
 
 AuthDep = Annotated[User, Depends(get_current_user)]
+
