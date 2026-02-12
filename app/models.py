@@ -45,10 +45,16 @@ class Category(SQLModel, table=True):
 class TodoCreate(SQLModel):
     text:str
 
+class CategoryResponse(SQLModel):
+    id: int
+    text:str
+
+    
 class TodoResponse(SQLModel):
     id: Optional[int] = Field(primary_key=True, default=None)
     text:str
     done: bool = False
+    categories:list[CategoryResponse]
 
 class TodoUpdate(SQLModel):
     text: Optional[str] = None
