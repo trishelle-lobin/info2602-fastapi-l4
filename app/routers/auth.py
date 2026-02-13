@@ -101,4 +101,58 @@ async def create_cat(db:SessionDep, user:AuthDep, todo_id:int,cat_id:int):
     db.commit()
     db.refresh(todos)
     return{"message":"Category added"}
+
+@auth_router.delete("/todo/{todo_id}/category/{cat_id}", status_code=status.HTTP_200_OK)
+def del_todo(todo_id: int, cat_id:int, db:SessionDep, user:AuthDep):
+
+    todo = db.exec(select(Todo).where(Todo.id==todo_id)).one_or_none()
+
+    if not todo:
+        raise HTTPException(
+            status_code=404,
+            detail="Not found",
+        )
+    if todo.user_id!=user.id:
+    
+        raise HTTPException(
+            status_code=403,
+            detail="Error occurred",
+        )
+    category = db.exec(select(Category).where(Category.id==cat_id)).one_or_none()
+    if not category:
+        raise HTTPException(
+            status_code=404,
+            detail="Not found",
+        )
+    if category.user_id!=user.id:
+    
+        raise HTTPException(
+            status_code=403,
+            detail="Error occurred, not authorized for this category",
+        )
+    
+    cat= db.exec(select(TodoCategory).where((TodoCategory.todo_id==todo.id)&(TodoCategory.category_id==category.id))).one_or_none()
+    if cat is None:
+         raise HTTPException(
+            status_code=404,
+            detail="Error occurred, no object",
+        )
+    
+    try:
+        db.delete(cat)
+        db.commit()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="An error occurred while deleting an item",
+        )
    
+@auth_router.get('/category/{cat_id}/todos', response_model=TodoCategory)
+def get_todo_by_id(cat_id:int, db:SessionDep, user:AuthDep):
+    todo = db.exec(select(Category).where(Category.user_id==user.id)).one_or_none()
+    if not todo:
+        raise HTTPException(
+            status_code=403,
+            detail="Error occurred, not authorized for this category",
+        )
+    return todo
