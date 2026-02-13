@@ -147,12 +147,18 @@ def del_todo(todo_id: int, cat_id:int, db:SessionDep, user:AuthDep):
             detail="An error occurred while deleting an item",
         )
    
-@auth_router.get('/category/{cat_id}/todos', response_model=TodoCategory)
+@auth_router.get('/category/{cat_id}/todos', response_model=list[TodoResponse])
 def get_todo_by_id(cat_id:int, db:SessionDep, user:AuthDep):
-    todo = db.exec(select(Category).where(Category.user_id==user.id)).one_or_none()
-    if not todo:
+    cate = db.exec(select(Category).where(Category.user_id==user.id)&(Category.id==cat_id)).one_or_none()
+
+    if not cate:
         raise HTTPException(
             status_code=403,
             detail="Error occurred, not authorized for this category",
         )
-    return todo
+    todocat = db.exec(select(TodoCategory).where(TodoCategory.category_id==cat_id)).all()
+    todoid=[]
+    for item in todocat:
+        todoid.append(item.todo_id)
+    todos = db.exec(select(Todo).where(Todo.id.in_(todoid))).all()
+    return todos
