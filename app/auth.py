@@ -52,9 +52,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db:Ses
     user = None
 
     if user_role == "admin":
-        user = db.get(Admin,user_id)
+        user = db.exec(select(Admin).where(Admin.username == user_id)).one_or_none()
     else:
-        user = db.get(RegularUser,user_id)
+        user = db.exec(select(RegularUser).where(RegularUser.username == user_id)).one_or_none()
     if user is None:
         raise credentials_exception
     return user

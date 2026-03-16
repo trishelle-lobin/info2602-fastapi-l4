@@ -78,3 +78,5 @@ def update_todo(id:int, db:SessionDep, user:AuthDep):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="An error occurred while deleting an item",
         )
+    
+    
